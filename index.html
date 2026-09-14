@@ -7,8 +7,30 @@
 </head>
 <body>
 
+<div class="container">
   <h1>Jogo das Cenas</h1>
 
-  <script src="script.js"></script>
+  <p id="dialogo"></p>
+
+  <input type="text" id="resposta" placeholder="Continue a fala...">
+  <button id="botao-enviar">Enviar</button>
+  <button id="botao-dica">Pedir dica</button>
+
+  <p id="dica"></p>
+
+  <div id="resultado" class="escondido">
+    <p id="pontuacao"></p>
+    <p id="resposta-correta"></p>
+    <p id="filme-revelado"></p>
+    <button id="jogar-novamente">Jogar novamente</button>
+  </div>
+
+  <div id="estatisticas">
+    <p id="rodadas-jogadas"></p>
+    <p id="media-acerto"></p>
+  </div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
