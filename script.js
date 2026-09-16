@@ -6,3 +6,13 @@ const cena = {
 };
 
 document.getElementById("dialogo").textContent = cena.dialogo;
+
+const inputResposta = document.getElementById("resposta");
+
+document.getElementById("botao-enviar").addEventListener("click", function() {
+    console.log(inputResposta.value);
+
+    document.getElementById("resultado").classList.remove("escondido");
+    document.getElementById("resposta-correta").textContent = cena.resposta;
+    document.getElementById("filme-revelado").textContent = cena.filme;
+});
