@@ -20,6 +20,8 @@ function normalizar(texto) {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "") // remove acentos
+    .replace(/[.,!?;:]/g, "")        // remove pontuação (vírgula, ponto, etc.)
+    .replace(/\s+/g, " ")            // caso sobre algum espaço duplo, reduz pra um só
     .trim();
 }
 
@@ -61,11 +63,14 @@ function calcularPontuacao(respostaJogador, respostaCorreta) {
 
     const distancia = levenshtein(a, b);
     const tamanhoMaximo = Math.max(a.length, b.length);
+    const tamanhoMinimo = Math.min(a.length, b.length);
 
     if (tamanhoMaximo === 0) return 100;
 
     const similaridade = 1 - (distancia / tamanhoMaximo);
-    return Math.round(similaridade * 100);
+    const penalidadeTamanho = tamanhoMinimo / tamanhoMaximo;
+
+    return Math.round(similaridade * penalidadeTamanho * 100);
 }
 
 document.getElementById("botao-enviar").addEventListener("click", function() {
@@ -75,5 +80,12 @@ document.getElementById("botao-enviar").addEventListener("click", function() {
     document.getElementById("resultado").classList.remove("escondido");
     document.getElementById("resposta-correta").textContent = cenaAtual.resposta;
     document.getElementById("filme-revelado").textContent = cenaAtual.filme;
+});
+
+let dicaUsada = false;
+document.getElementById("botao-dica").addEventListener("click", function(){
+    dicaUsada = true;
+    const dica = cenaAtual.resposta.slice(0, 3);
+    document.getElementById("dica").textContent = dica;
 });
 
