@@ -1,16 +1,3 @@
-//Cria um array com as cenas, seus respectivos IDs, títulos, diálogos e resposta
-const cenas = [
-    { id: 1, filme: "Round 6", dialogo: "Eu acho que precisamos...", resposta: "conversar sobre isso." },
-    { id: 2, filme: "Friends", dialogo: "Como assim você...", resposta: "esqueceu do aniversário dela." },
-    { id: 3, filme: "Harry Potter e a Pedra Filosofal", dialogo: "Você é...", resposta: "um bruxo, Harry."}
-];
-
-//Sorteia um índice aleatório
-const indiceAleatorio = Math.floor(Math.random() * cenas.length);
-const cenaAtual = cenas[indiceAleatorio];
-
-document.getElementById("dialogo").textContent = cenaAtual.dialogo;
-
 const inputResposta = document.getElementById("resposta");
 
 //Levenshtein
@@ -73,19 +60,31 @@ function calcularPontuacao(respostaJogador, respostaCorreta) {
     return Math.round(similaridade * penalidadeTamanho * 100);
 }
 
-document.getElementById("botao-enviar").addEventListener("click", function() {
+async function iniciarJogo() {
+    const resposta = await fetch("data/cenas.json");
+    const cenas = await resposta.json();
+
+    const indiceAleatorio = Math.floor(Math.random() * cenas.length);
+    const cenaAtual = cenas[indiceAleatorio];
+
+    document.getElementById("dialogo").textContent = cenaAtual.dialogo;
+
+    document.getElementById("botao-enviar").addEventListener("click", function() {
     const pontuacao = calcularPontuacao(inputResposta.value, cenaAtual.resposta);
     document.getElementById("pontuacao").textContent = pontuacao;
 
     document.getElementById("resultado").classList.remove("escondido");
     document.getElementById("resposta-correta").textContent = cenaAtual.resposta;
     document.getElementById("filme-revelado").textContent = cenaAtual.filme;
-});
+    });
 
-let dicaUsada = false;
-document.getElementById("botao-dica").addEventListener("click", function(){
+    let dicaUsada = false;
+    document.getElementById("botao-dica").addEventListener("click", function() {
     dicaUsada = true;
     const dica = cenaAtual.resposta.slice(0, 3);
     document.getElementById("dica").textContent = dica;
-});
+    });
+}
+
+iniciarJogo();
 

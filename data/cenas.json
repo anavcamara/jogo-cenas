@@ -1,0 +1,71 @@
+[
+    {
+    "id": 1,
+    "filme": "Round 6",
+    "dialogo": "Eu acho que precisamos...",
+    "resposta": "conversar sobre isso."
+    },
+
+    {
+    "id": 2,
+    "filme": "Friends",
+    "dialogo": "Como assim você...",
+    "resposta": "esqueceu do aniversário dela."
+    },
+
+    {
+    "id": 3,
+    "filme": "Harry Potter e a Pedra Filosofal",
+    "dialogo": "Você é...",
+    "resposta": "um bruxo, Harry."
+    },
+
+    {
+    "id": 4,
+    "filme": "Star Wars: O Império Contra-Ataca",
+    "dialogo": "Não,",
+    "resposta": "eu sou seu pai."
+    },
+
+    {
+    "id": 5,
+    "filme": "O Poderoso Chefão",
+    "dialogo": "Vou fazer a ele uma oferta",
+    "resposta": "que ele não poderá recusar."
+    },
+
+    {
+    "id": 6,
+    "filme": "Forrest Gump",
+    "dialogo": "A vida é como uma caixa de chocolates,",
+    "resposta": "você nunca sabe o que vai encontrar."
+    },
+
+    {
+    "id": 7,
+    "filme": "Titanic",
+    "dialogo": "Eu sou o rei",
+    "resposta": "do mundo!"
+    },
+
+    {
+    "id": 8,
+    "filme": "O Rei Leão",
+    "dialogo": "Lembre-se quem",
+    "resposta": "você é."
+    },
+
+    {
+    "id": 9,
+    "filme": "Batman: O Cavaleiro das Trevas",
+    "dialogo": "Por que tão",
+    "resposta": "sério?"
+    },
+
+    {
+    "id": 10,
+    "filme": "Vingadores: Ultimato",
+    "dialogo": "Eu sou",
+    "resposta": "o Homem de Ferro."
+    }
+]
