@@ -88,6 +88,51 @@ function normalizar(texto) {
     .trim();
 }
 
+// ==============================
+// SIMILARIDADE (LEVENSHTEIN)
+// ==============================
+
+function levenshtein(a, b) {
+  const matriz = [];
+
+  for (let i = 0; i <= a.length; i++) {
+    matriz[i] = [i];
+  }
+  for (let j = 0; j <= b.length; j++) {
+    matriz[0][j] = j;
+  }
+
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      if (a[i - 1] === b[j - 1]) {
+        matriz[i][j] = matriz[i - 1][j - 1];
+      } else {
+        matriz[i][j] = Math.min(
+          matriz[i - 1][j - 1] + 1,
+          matriz[i][j - 1] + 1,
+          matriz[i - 1][j] + 1
+        );
+      }
+    }
+  }
+
+  return matriz[a.length][b.length];
+}
+
+function similaridade(a, b) {
+  const distancia = levenshtein(a, b);
+  const tamanhoMaximo = Math.max(a.length, b.length);
+  const tamanhoMinimo = Math.min(a.length, b.length);
+
+  if (tamanhoMaximo === 0) {
+    return 1;
+  }
+
+  const proximidade = 1 - distancia / tamanhoMaximo;
+  const penalidadeTamanho = tamanhoMinimo / tamanhoMaximo;
+
+  return proximidade * penalidadeTamanho;
+}
 
 // ==============================
 // MODAIS
@@ -421,7 +466,9 @@ function verificarResposta(respostaJogador) {
 
   const cena = estado.cenaAtual;
 
-  const acertou = normalizar(cena.resposta) === respostaNormalizada;
+  const TOLERANCIA_ACERTO = 0.85;
+
+  const acertou = similaridade(respostaNormalizada, normalizar(cena.resposta)) >= TOLERANCIA_ACERTO;
 
   if (acertou) {
     estado.tentativasRestantes--;
