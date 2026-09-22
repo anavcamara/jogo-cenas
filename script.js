@@ -17,6 +17,7 @@ const elementos = {
   playButton: document.getElementById("play-button"),
   brandButton: document.getElementById("brand-button"),
   headerAction: document.getElementById("header-action"),
+  loadError: document.getElementById("load-error"),
 
   // Jogo
   gameScreen: document.getElementById("game-screen"),
@@ -791,12 +792,9 @@ async function carregarCenas() {
     elementos.playButton.disabled = false;
 
   } catch (erro) {
-
     console.error(erro);
-
-    alert("Não foi possível carregar as cenas do jogo.");
+    elementos.loadError.hidden = false;
   }
 }
-
 
 carregarCenas();
