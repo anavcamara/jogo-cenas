@@ -2,402 +2,752 @@ let cenas = [];
 
 const estado = {
   modo: null,
-  cena: null,
-  tentativa: 0,
-  maxTentativas: 3,
+  cenaAtual: null,
+  tentativasRestantes: 3,
   dicasUsadas: 0,
-  respostas: [],
-  partida: 0,
+  terminou: false,
   acertou: false
 };
 
-const els = {
-  homeScreen: document.querySelector("#home-screen"),
-  gameScreen: document.querySelector("#game-screen"),
-  playButton: document.querySelector("#play-button"),
-  homeCopy: document.querySelector(".home-copy"),
-  brandButton: document.querySelector("#brand-button"),
-  headerAction: document.querySelector("#header-action"),
-  backButton: document.querySelector("#back-button"),
-  gameModeLabel: document.querySelector("#game-mode-label"),
-  gameEyebrow: document.querySelector("#game-eyebrow"),
-  gameTitle: document.querySelector("#game-title"),
-  gameCopy: document.querySelector("#game-copy"),
-  dialogo: document.querySelector("#dialogo"),
-  completeForm: document.querySelector("#complete-form"),
-  answerInput: document.querySelector("#answer-input"),
-  contextForm: document.querySelector("#context-form"),
-  contextInput: document.querySelector("#context-input"),
-  suggestions: document.querySelector("#suggestions"),
-  attemptDots: document.querySelector("#attempt-dots"),
-  hintButton: document.querySelector("#hint-button"),
-  hints: document.querySelector("#hints"),
-  roundFeedback: document.querySelector("#round-feedback"),
-  feedbackMark: document.querySelector("#feedback-mark"),
-  feedbackEyebrow: document.querySelector("#feedback-eyebrow"),
-  feedbackTitle: document.querySelector("#feedback-title"),
-  feedbackMessage: document.querySelector("#feedback-message"),
-  feedbackAnswer: document.querySelector("#feedback-answer"),
-  feedbackWork: document.querySelector("#feedback-work"),
-  continueButton: document.querySelector("#continue-button"),
-  answerFeedback: document.querySelector("#answer-feedback"),
-  contextFeedback: document.querySelector("#context-feedback"),
-  modeModal: document.querySelector("#mode-modal"),
-  howModal: document.querySelector("#how-modal"),
-  resultModal: document.querySelector("#result-modal"),
-  resultEyebrow: document.querySelector("#result-eyebrow"),
-  resultTitle: document.querySelector("#result-title"),
-  resultCopy: document.querySelector("#result-copy"),
-  resultScore: document.querySelector("#result-score"),
-  playAgainButton: document.querySelector("#play-again-button"),
-  homeButton: document.querySelector("#home-button")
+const elementos = {
+  app: document.getElementById("app"),
+
+  // Home
+  homeScreen: document.getElementById("home-screen"),
+  playButton: document.getElementById("play-button"),
+  brandButton: document.getElementById("brand-button"),
+  headerAction: document.getElementById("header-action"),
+
+  // Jogo
+  gameScreen: document.getElementById("game-screen"),
+  backButton: document.getElementById("back-button"),
+  gameModeLabel: document.getElementById("game-mode-label"),
+  gameEyebrow: document.getElementById("game-eyebrow"),
+  gameTitle: document.getElementById("game-title"),
+  gameCopy: document.getElementById("game-copy"),
+  dialogo: document.getElementById("dialogo"),
+
+  // Complete a cena
+  completeForm: document.getElementById("complete-form"),
+  answerInput: document.getElementById("answer-input"),
+  answerFeedback: document.getElementById("answer-feedback"),
+
+  // Fora de contexto
+  contextForm: document.getElementById("context-form"),
+  contextInput: document.getElementById("context-input"),
+  contextFeedback: document.getElementById("context-feedback"),
+  suggestions: document.getElementById("suggestions"),
+
+  // Jogo
+  attemptDots: document.getElementById("attempt-dots"),
+  hintButton: document.getElementById("hint-button"),
+  hints: document.getElementById("hints"),
+
+  // Feedback da rodada
+  roundFeedback: document.getElementById("round-feedback"),
+  feedbackMark: document.getElementById("feedback-mark"),
+  feedbackEyebrow: document.getElementById("feedback-eyebrow"),
+  feedbackTitle: document.getElementById("feedback-title"),
+  feedbackMessage: document.getElementById("feedback-message"),
+  feedbackAnswer: document.getElementById("feedback-answer"),
+  feedbackWork: document.getElementById("feedback-work"),
+  continueButton: document.getElementById("continue-button"),
+
+  // Modais
+  modeModal: document.getElementById("mode-modal"),
+  howModal: document.getElementById("how-modal"),
+  resultModal: document.getElementById("result-modal"),
+
+  // Resultado
+  resultEyebrow: document.getElementById("result-eyebrow"),
+  resultTitle: document.getElementById("result-title"),
+  resultCopy: document.getElementById("result-copy"),
+  resultScore: document.getElementById("result-score"),
+  resultWork: document.getElementById("result-work"),
+  resultYear: document.getElementById("result-year"),
+  resultGenre: document.getElementById("result-genre"),
+  resultCharacter: document.getElementById("result-character"),
+  resultAnswer: document.getElementById("result-answer"),
+  playAgainButton: document.getElementById("play-again-button"),
+  homeButton: document.getElementById("home-button")
 };
+
+elementos.playButton.disabled = true;
+
+// ==============================
+// NORMALIZAÇÃO
+// ==============================
 
 function normalizar(texto) {
   return texto
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
-    .replace(/[.!?,;:\"'“”‘’]/g, "")
+    .replace(/[.!?,;:"'“”‘’]/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
 
+
+// ==============================
+// MODAIS
+// ==============================
+
 function abrirModal(modal) {
   modal.hidden = false;
-  document.body.classList.add("modal-open");
-  const primeiroBotao = modal.querySelector("button:not(.modal-close)");
-  if (primeiroBotao) primeiroBotao.focus();
 }
 
 function fecharModal(modal) {
   modal.hidden = true;
-  if ([els.modeModal, els.howModal, els.resultModal].every(item => item.hidden)) {
-    document.body.classList.remove("modal-open");
+}
+
+
+// ==============================
+// HOME
+// ==============================
+
+elementos.playButton.addEventListener("click", () => {
+  abrirModal(elementos.modeModal);
+});
+
+elementos.headerAction.addEventListener("click", () => {
+  abrirModal(elementos.howModal);
+});
+
+elementos.brandButton.addEventListener("click", voltarParaHome);
+
+
+// Fecha modais pelos botões X
+document.querySelectorAll(".modal-close").forEach(botao => {
+  botao.addEventListener("click", () => {
+    const modal = botao.closest(".modal-layer");
+    fecharModal(modal);
+  });
+});
+
+
+// Fecha pelo backdrop
+document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
+  backdrop.addEventListener("click", () => {
+    const modal = backdrop.closest(".modal-layer");
+
+    if (modal.id !== "result-modal") {
+      fecharModal(modal);
+    }
+  });
+});
+
+
+// ==============================
+// ESCOLHA DO MODO
+// ==============================
+
+document.querySelectorAll(".mode-option").forEach(botao => {
+  botao.addEventListener("click", () => {
+    const modo = botao.dataset.mode;
+
+    iniciarJogo(modo);
+  });
+});
+
+
+// ==============================
+// INICIAR JOGO
+// ==============================
+
+function iniciarJogo(modo) {
+  if (cenas.length === 0) {
+    return;
   }
-}
 
-function irParaHome() {
-  fecharModal(els.modeModal);
-  fecharModal(els.howModal);
-  fecharModal(els.resultModal);
-  els.gameScreen.hidden = true;
-  els.homeScreen.hidden = false;
-  estado.modo = null;
-}
-
-function abrirEscolhaDeModo() {
-  abrirModal(els.modeModal);
-}
-
-function iniciarModo(modo) {
   estado.modo = modo;
-  estado.cena = cenaAleatoria();
-  estado.tentativa = 0;
+  estado.cenaAtual = cenas[Math.floor(Math.random() * cenas.length)];
+  estado.tentativasRestantes = 3;
   estado.dicasUsadas = 0;
-  estado.respostas = [];
+  estado.terminou = false;
   estado.acertou = false;
-  estado.partida += 1;
 
-  fecharModal(els.modeModal);
-  els.homeScreen.hidden = true;
-  els.gameScreen.hidden = false;
+  fecharModal(elementos.modeModal);
 
-  configurarInterfaceDoModo();
-  prepararRodada();
-}
+  elementos.homeScreen.hidden = true;
+  elementos.gameScreen.hidden = false;
 
-function cenaAleatoria() {
-  if (!cenas.length) return null;
-  return cenas[Math.floor(Math.random() * cenas.length)];
-}
-
-function configurarInterfaceDoModo() {
-  const ehCompletar = estado.modo === "complete";
-
-  els.gameModeLabel.textContent = ehCompletar ? "MODO 01" : "MODO 02";
-  els.gameEyebrow.textContent = ehCompletar ? "COMPLETE A CENA" : "FORA DE CONTEXTO";
-  els.gameTitle.textContent = ehCompletar ? "Continue a fala." : "Descubra a obra.";
-  els.gameCopy.textContent = ehCompletar
-    ? "Uma frase incompleta. Três tentativas."
-    : "Você sabe de onde essa fala veio?";
-
-  els.completeForm.classList.toggle("is-hidden", !ehCompletar);
-  els.contextForm.classList.toggle("is-hidden", ehCompletar);
-}
-
-function prepararRodada() {
-  if (!estado.cena) return;
-
-  els.dialogo.textContent = estado.cena.dialogo;
-  els.answerInput.value = "";
-  els.contextInput.value = "";
-  els.answerFeedback.textContent = "";
-  els.contextFeedback.textContent = "";
-  els.hints.innerHTML = "";
-  els.suggestions.innerHTML = "";
-  els.suggestions.classList.remove("is-visible");
-  els.roundFeedback.hidden = true;
-  els.hintButton.disabled = false;
-
-  atualizarTentativas();
+  prepararTelaDoModo();
+  carregarCena();
 
   requestAnimationFrame(() => {
-    const input = estado.modo === "complete" ? els.answerInput : els.contextInput;
-    input.focus();
+    elementos.gameScreen.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
   });
 }
 
-function atualizarTentativas() {
-  els.attemptDots.innerHTML = "";
 
-  for (let i = 0; i < estado.maxTentativas; i += 1) {
-    const dot = document.createElement("span");
-    dot.className = "attempt-dot";
-    if (i >= estado.tentativa) dot.classList.add("is-active");
-    if (i === estado.tentativa - 1) dot.classList.add("is-used");
-    dot.setAttribute("aria-hidden", "true");
-    els.attemptDots.appendChild(dot);
-  }
-}
+// ==============================
+// PREPARAR MODO
+// ==============================
 
-function obterDicas() {
-  const cena = estado.cena || {};
-  const dicas = [];
-
-  if (cena.contexto) dicas.push({ titulo: "CONTEXTO", texto: cena.contexto });
-  if (cena.personagem) dicas.push({ titulo: "PERSONAGEM", texto: cena.personagem });
-  if (cena.genero) dicas.push({ titulo: "GÊNERO", texto: cena.genero });
-  if (cena.ano) dicas.push({ titulo: "LANÇAMENTO", texto: String(cena.ano) });
-
-  const resposta = estado.modo === "complete" ? cena.resposta : cena.obra;
-  if (resposta) {
-    const pista = normalizar(resposta).slice(0, 3);
-    dicas.push({ titulo: "COMEÇA COM", texto: `${pista}...` });
-  }
-
-  return dicas;
-}
-
-function pedirDica() {
-  const dicas = obterDicas();
-
-  if (estado.dicasUsadas >= dicas.length) {
-    els.hintButton.disabled = true;
-    return;
-  }
-
-  const dica = dicas[estado.dicasUsadas];
-  estado.dicasUsadas += 1;
-
-  const item = document.createElement("div");
-  item.className = "hint-item";
-  item.innerHTML = `<span>DICA ${estado.dicasUsadas}</span><p></p>`;
-  item.querySelector("p").textContent = dica.texto;
-  els.hints.appendChild(item);
-
-  els.hintButton.querySelector("span:last-child").textContent =
-    estado.dicasUsadas < dicas.length ? "PEDIR OUTRA DICA" : "TODAS AS DICAS";
-
-  if (estado.dicasUsadas >= dicas.length) els.hintButton.disabled = true;
-}
-
-function avaliarResposta(resposta) {
-  const atual = estado.cena;
+function prepararTelaDoModo() {
 
   if (estado.modo === "complete") {
-    return normalizar(resposta) === normalizar(atual.resposta);
+
+    elementos.gameModeLabel.textContent = "COMPLETE A CENA";
+    elementos.gameEyebrow.textContent = "COMPLETE A FALA";
+    elementos.gameTitle.textContent = "Continue a cena.";
+    elementos.gameCopy.textContent =
+      "Complete a fala antes que suas três tentativas acabem.";
+
+    elementos.completeForm.hidden = false;
+    elementos.contextForm.hidden = true;
+
+  } else {
+
+    elementos.gameModeLabel.textContent = "FORA DE CONTEXTO";
+    elementos.gameEyebrow.textContent = "DESCUBRA A OBRA";
+    elementos.gameTitle.textContent = "De onde veio essa fala?";
+    elementos.gameCopy.textContent =
+      "Digite o nome da obra e descubra se você reconhece a cena.";
+
+    elementos.completeForm.hidden = true;
+    elementos.contextForm.hidden = false;
   }
-
-  return normalizar(resposta) === normalizar(atual.obra);
 }
 
-function registrarTentativa(resposta) {
-  estado.tentativa += 1;
-  estado.respostas.push(resposta);
-  atualizarTentativas();
+
+// ==============================
+// CARREGAR CENA
+// ==============================
+
+function carregarCena() {
+  const cena = estado.cenaAtual;
+
+    elementos.answerInput.value = "";
+    elementos.contextInput.value = "";
+
+    elementos.answerInput.disabled = false;
+    elementos.contextInput.disabled = false;
+
+    elementos.completeForm.querySelector("button").disabled = false;
+    elementos.contextForm.querySelector("button").disabled = false;
+
+  elementos.answerFeedback.textContent = "";
+  elementos.contextFeedback.textContent = "";
+
+  elementos.hints.innerHTML = "";
+
+  elementos.roundFeedback.hidden = true;
+  elementos.roundFeedback.classList.remove("correct", "incorrect");
+
+  elementos.hintButton.disabled = false;
+  elementos.hintButton.innerHTML = `
+    <span aria-hidden="true">+</span>
+    <span>PEDIR DICA</span>
+  `;
+
+  renderizarTentativas();
+
+  if (estado.modo === "complete") {
+
+    elementos.dialogo.textContent =
+      `“${cena.dialogo}”`;
+
+    setTimeout(() => {
+      elementos.answerInput.focus();
+    }, 100);
+
+  } else {
+
+    const falaInteira = `${cena.dialogo} ${cena.resposta}`;
+
+    elementos.dialogo.textContent =
+      `“${falaInteira}”`;
+
+    setTimeout(() => {
+      elementos.contextInput.focus();
+    }, 100);
+  }
 }
 
-function mostrarErro(input, feedbackElement) {
-  input.classList.remove("shake");
-  void input.offsetWidth;
-  input.classList.add("shake");
-  feedbackElement.textContent = estado.tentativa < estado.maxTentativas
-    ? "NÃO FOI DESSA VEZ. Tente novamente."
-    : "NÃO FOI DESSA VEZ.";
+
+// ==============================
+// TENTATIVAS
+// ==============================
+
+function renderizarTentativas() {
+
+  elementos.attemptDots.innerHTML = "";
+
+  for (let i = 0; i < 3; i++) {
+
+    const ponto = document.createElement("span");
+
+    ponto.classList.add("attempt-dot");
+
+    if (i < estado.tentativasRestantes) {
+      ponto.classList.add("available");
+    }
+
+    elementos.attemptDots.appendChild(ponto);
+  }
 }
 
-function finalizarRodada(acertou) {
-  estado.acertou = acertou;
 
-  els.answerInput.disabled = true;
-  els.contextInput.disabled = true;
-  els.completeForm.querySelector("button").disabled = true;
-  els.contextForm.querySelector("button").disabled = true;
-  els.hintButton.disabled = true;
+// ==============================
+// DICAS
+// ==============================
 
-  els.roundFeedback.hidden = false;
-  els.roundFeedback.className = `round-feedback ${acertou ? "correct" : "incorrect"}`;
-  els.feedbackEyebrow.textContent = acertou ? "ACERTO" : "FIM DAS TENTATIVAS";
-  els.feedbackTitle.textContent = acertou ? "Você matou a cena." : "Essa não foi.";
-  els.feedbackMessage.textContent = acertou
-    ? "Boa. Você acertou antes de esgotar as tentativas."
-    : "As três tentativas acabaram. A resposta certa está abaixo.";
+function obterDicaAtual() {
 
-  els.feedbackAnswer.textContent = estado.modo === "complete"
-    ? estado.cena.resposta
-    : estado.cena.obra;
-  els.feedbackWork.textContent = estado.cena.obra;
-  els.continueButton.textContent = "VER RESULTADO →";
+  const cena = estado.cenaAtual;
 
-  els.roundFeedback.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  const dicas = [
+    {
+      titulo: "ANO",
+      valor: cena.ano
+    },
+    {
+      titulo: "GÊNERO",
+      valor: cena.genero
+    },
+    {
+      titulo: "PERSONAGEM",
+      valor: cena.personagem
+    }
+  ];
+
+  return dicas[estado.dicasUsadas];
 }
 
-function enviarResposta(event) {
-  event.preventDefault();
 
-  if (estado.acertou || estado.tentativa >= estado.maxTentativas) return;
+function mostrarDica() {
 
-  const input = estado.modo === "complete" ? els.answerInput : els.contextInput;
-  const feedback = estado.modo === "complete" ? els.answerFeedback : els.contextFeedback;
-  const resposta = input.value.trim();
-
-  if (!resposta) {
-    feedback.textContent = "Digite uma resposta antes de enviar.";
-    input.focus();
+  if (estado.terminou) {
     return;
   }
 
-  fecharSugestoes();
-  const acertou = avaliarResposta(resposta);
-  registrarTentativa(resposta);
+  const dica = obterDicaAtual();
+
+  if (!dica) {
+    return;
+  }
+
+  const bloco = document.createElement("div");
+
+  bloco.classList.add("hint");
+
+  bloco.innerHTML = `
+    <span class="hint-number">
+      DICA ${estado.dicasUsadas + 1}
+    </span>
+
+    <strong>${dica.titulo}</strong>
+
+    <p>${dica.valor || "Informação ainda não cadastrada."}</p>
+  `;
+
+  elementos.hints.appendChild(bloco);
+
+  estado.dicasUsadas++;
+
+  if (estado.dicasUsadas < 3) {
+
+    elementos.hintButton.innerHTML = `
+      <span aria-hidden="true">+</span>
+      <span>PEDIR OUTRA DICA</span>
+    `;
+
+  } else {
+
+    elementos.hintButton.innerHTML = `
+      <span>TODAS AS DICAS REVELADAS</span>
+    `;
+
+    elementos.hintButton.disabled = true;
+  }
+}
+
+
+// ==============================
+// SUBMIT COMPLETE A CENA
+// ==============================
+
+elementos.completeForm.addEventListener("submit", event => {
+
+  event.preventDefault();
+
+  if (estado.modo !== "complete" || estado.terminou) {
+    return;
+  }
+
+  verificarResposta(elementos.answerInput.value);
+});
+
+
+// ==============================
+// SUBMIT FORA DE CONTEXTO
+// ==============================
+
+elementos.contextForm.addEventListener("submit", event => {
+
+  event.preventDefault();
+
+  if (estado.modo !== "context" || estado.terminou) {
+    return;
+  }
+
+  esconderSugestoes();
+
+  verificarObra(elementos.contextInput.value);
+});
+
+
+// ==============================
+// VERIFICAR RESPOSTA
+// ==============================
+
+function verificarResposta(respostaJogador) {
+
+  const respostaNormalizada = normalizar(respostaJogador);
+
+  if (!respostaNormalizada) {
+    elementos.answerFeedback.textContent =
+      "Digite uma resposta antes de enviar.";
+
+    elementos.answerInput.focus();
+
+    return;
+  }
+
+  const cena = estado.cenaAtual;
+
+  const acertou = normalizar(cena.resposta) === respostaNormalizada;
 
   if (acertou) {
-    input.value = resposta;
     finalizarRodada(true);
     return;
   }
 
-  if (estado.tentativa >= estado.maxTentativas) {
+  perderTentativa();
+
+  elementos.answerFeedback.textContent =
+    estado.tentativasRestantes > 0
+      ? "Não foi dessa vez. Tente novamente."
+      : "";
+}
+
+
+// ==============================
+// VERIFICAR OBRA
+// ==============================
+
+function verificarObra(respostaJogador) {
+
+  const respostaNormalizada = normalizar(respostaJogador);
+
+  if (!respostaNormalizada) {
+    elementos.contextFeedback.textContent =
+      "Digite uma obra antes de enviar.";
+
+    elementos.contextInput.focus();
+
+    return;
+  }
+
+  const cena = estado.cenaAtual;
+
+  const obraNormalizada = normalizar(cena.obra);
+  const acertou =
+    respostaNormalizada.length >= 3 &&
+    (obraNormalizada === respostaNormalizada ||
+      obraNormalizada.includes(respostaNormalizada) ||
+      respostaNormalizada.includes(obraNormalizada));
+
+  if (acertou) {
+    finalizarRodada(true);
+    return;
+  }
+
+  perderTentativa();
+
+  elementos.contextFeedback.textContent =
+    estado.tentativasRestantes > 0
+      ? "Ainda não. Tente outra vez."
+      : "";
+}
+
+
+// ==============================
+// PERDER TENTATIVA
+// ==============================
+
+function perderTentativa() {
+
+  estado.tentativasRestantes--;
+
+  renderizarTentativas();
+
+  if (estado.tentativasRestantes <= 0) {
+
     finalizarRodada(false);
+
+    return;
+  }
+}
+
+
+// ==============================
+// FINALIZAR RODADA
+// ==============================
+
+function finalizarRodada(acertou) {
+
+  estado.acertou = acertou;
+  estado.terminou = true;
+
+  elementos.roundFeedback.classList.remove("correct", "incorrect");
+  elementos.roundFeedback.classList.add(acertou ? "correct" : "incorrect");
+
+  elementos.answerInput.disabled = true;
+  elementos.contextInput.disabled = true;
+
+  elementos.completeForm.querySelector("button").disabled = true;
+  elementos.contextForm.querySelector("button").disabled = true;
+
+  elementos.hintButton.disabled = true;
+
+  elementos.roundFeedback.hidden = false;
+
+  if (acertou) {
+
+    elementos.feedbackMark.textContent = "✓";
+    elementos.feedbackEyebrow.textContent = "ACERTOU";
+    elementos.feedbackTitle.textContent = "Você reconheceu a cena.";
+    elementos.feedbackMessage.textContent =
+      "Boa. Essa você não deixou passar.";
+
+  } else {
+
+    elementos.feedbackMark.textContent = "×";
+    elementos.feedbackEyebrow.textContent = "FIM DAS TENTATIVAS";
+    elementos.feedbackTitle.textContent = "Essa passou longe.";
+    elementos.feedbackMessage.textContent =
+      "A resposta correta era:";
+  }
+
+  elementos.feedbackAnswer.textContent =
+    `"${estado.cenaAtual.resposta}"`;
+
+  elementos.feedbackWork.textContent =
+    estado.cenaAtual.obra;
+
+  elementos.continueButton.textContent =
+    "VER RESULTADO";
+
+  elementos.roundFeedback.scrollIntoView({
+    behavior: "smooth",
+    block: "nearest"
+  });
+}
+
+
+// ==============================
+// RESULTADO FINAL
+// ==============================
+
+function mostrarResultado() {
+
+  const cena = estado.cenaAtual;
+
+  elementos.resultEyebrow.textContent =
+    estado.acertou ? "VOCÊ ACERTOU" : "RESULTADO";
+
+  elementos.resultTitle.textContent =
+    estado.acertou
+      ? "Essa você conhecia."
+      : "Agora você conhece a resposta.";
+
+  elementos.resultCopy.textContent =
+    estado.acertou
+      ? "Você completou o desafio."
+      : "A cena fica registrada para a próxima tentativa.";
+
+  elementos.resultWork.textContent =
+    cena.obra || "Não informado";
+
+  elementos.resultYear.textContent =
+    cena.ano || "Não informado";
+
+  elementos.resultGenre.textContent =
+    cena.genero || "Não informado";
+
+  elementos.resultCharacter.textContent =
+    cena.personagem || "Não informado";
+
+  elementos.resultAnswer.textContent =
+    `"${cena.resposta}"`;
+
+  elementos.resultScore.textContent =
+    `${3 - estado.tentativasRestantes} tentativa(s) utilizada(s)`;
+
+  abrirModal(elementos.resultModal);
+}
+
+
+// ==============================
+// CONTINUAR
+// ==============================
+
+elementos.continueButton.addEventListener("click", mostrarResultado);
+
+
+// ==============================
+// JOGAR NOVAMENTE
+// ==============================
+
+elementos.playAgainButton.addEventListener("click", () => {
+
+  fecharModal(elementos.resultModal);
+
+  iniciarJogo(estado.modo);
+});
+
+
+// ==============================
+// VOLTAR PARA HOME
+// ==============================
+
+function voltarParaHome() {
+
+  fecharModal(elementos.modeModal);
+  fecharModal(elementos.howModal);
+  fecharModal(elementos.resultModal);
+
+  elementos.gameScreen.hidden = true;
+  elementos.homeScreen.hidden = false;
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}
+
+
+elementos.homeButton.addEventListener("click", voltarParaHome);
+
+elementos.backButton.addEventListener("click", () => {
+
+  elementos.gameScreen.hidden = true;
+  elementos.homeScreen.hidden = false;
+
+  abrirModal(elementos.modeModal);
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+});
+
+
+// ==============================
+// AUTOCOMPLETE LOCAL
+// ==============================
+
+elementos.contextInput.addEventListener("input", () => {
+
+  if (estado.modo !== "context" || estado.terminou) {
     return;
   }
 
-  mostrarErro(input, feedback);
-  input.value = "";
-  input.focus();
-}
+  const texto = normalizar(elementos.contextInput.value);
 
-function mostrarResultadoFinal() {
-  els.resultEyebrow.textContent = estado.acertou ? "RESULTADO" : "FIM DA RODADA";
-  els.resultTitle.textContent = estado.acertou ? "Você levou essa." : "A cena escapou dessa vez.";
-  els.resultCopy.textContent = estado.modo === "complete"
-    ? `A continuação era: “${estado.cena.resposta}” — ${estado.cena.obra}.`
-    : `A obra era “${estado.cena.obra}”.`;
-  els.resultScore.textContent = `${estado.tentativa} / ${estado.maxTentativas} TENTATIVAS`;
-
-  abrirModal(els.resultModal);
-}
-
-function reiniciarModo() {
-  fecharModal(els.resultModal);
-  iniciarModo(estado.modo);
-}
-
-function fecharSugestoes() {
-  els.suggestions.classList.remove("is-visible");
-  els.suggestions.innerHTML = "";
-}
-
-function encontrarSugestoes(texto) {
-  const termo = normalizar(texto);
-  if (termo.length < 2) return [];
-
-  return cenas
-    .filter(cena => normalizar(cena.obra).includes(termo))
-    .slice(0, 5);
-}
-
-function renderizarSugestoes() {
-  const sugestoes = encontrarSugestoes(els.contextInput.value);
-  els.suggestions.innerHTML = "";
-
-  if (!sugestoes.length || els.contextInput.value.trim().length < 2) {
-    fecharSugestoes();
+  if (texto.length < 2) {
+    esconderSugestoes();
     return;
   }
 
-  sugestoes.forEach(cena => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "suggestion";
-    button.setAttribute("role", "option");
+  const obras = [...new Set(
+    cenas
+      .map(cena => cena.obra)
+      .filter(Boolean)
+  )];
 
-    const title = document.createElement("span");
-    title.textContent = cena.obra;
-    const type = document.createElement("small");
-    type.textContent = cena.tipo || "obra";
+  const resultados = obras.filter(obra =>
+    normalizar(obra).includes(texto)
+  );
 
-    button.append(title, type);
-    button.addEventListener("click", () => {
-      els.contextInput.value = cena.obra;
-      fecharSugestoes();
-      els.contextInput.focus();
+  mostrarSugestoes(resultados);
+});
+
+
+function mostrarSugestoes(resultados) {
+
+  elementos.suggestions.innerHTML = "";
+
+  if (resultados.length === 0) {
+    esconderSugestoes();
+    return;
+  }
+
+  resultados.slice(0, 5).forEach(obra => {
+
+    const opcao = document.createElement("button");
+
+    opcao.type = "button";
+    opcao.classList.add("suggestion-option");
+
+    opcao.textContent = obra;
+
+    opcao.addEventListener("click", () => {
+
+      elementos.contextInput.value = obra;
+
+      esconderSugestoes();
+
+      elementos.contextInput.focus();
     });
 
-    els.suggestions.appendChild(button);
-  });
-
-  els.suggestions.classList.add("is-visible");
-}
-
-function configurarListeners() {
-  els.playButton.addEventListener("click", abrirEscolhaDeModo);
-  els.brandButton.addEventListener("click", irParaHome);
-  els.headerAction.addEventListener("click", () => abrirModal(els.howModal));
-  els.backButton.addEventListener("click", irParaHome);
-  els.hintButton.addEventListener("click", pedirDica);
-  els.completeForm.addEventListener("submit", enviarResposta);
-  els.contextForm.addEventListener("submit", enviarResposta);
-  els.continueButton.addEventListener("click", mostrarResultadoFinal);
-  els.playAgainButton.addEventListener("click", reiniciarModo);
-  els.homeButton.addEventListener("click", irParaHome);
-  els.contextInput.addEventListener("input", renderizarSugestoes);
-
-  document.querySelectorAll("[data-mode]").forEach(button => {
-    button.addEventListener("click", () => iniciarModo(button.dataset.mode));
-  });
-
-  document.querySelectorAll(".modal-close").forEach(button => {
-    button.addEventListener("click", () => fecharModal(button.closest(".modal-layer")));
-  });
-
-  document.querySelectorAll("[data-close-modal]").forEach(backdrop => {
-    backdrop.addEventListener("click", () => fecharModal(document.getElementById(backdrop.dataset.closeModal)));
-  });
-
-  document.addEventListener("keydown", event => {
-    if (event.key === "Escape") {
-      if (!els.resultModal.hidden) return;
-      if (!els.modeModal.hidden) fecharModal(els.modeModal);
-      if (!els.howModal.hidden) fecharModal(els.howModal);
-      fecharSugestoes();
-    }
+    elementos.suggestions.appendChild(opcao);
   });
 }
 
-async function iniciarAplicacao() {
+
+function esconderSugestoes() {
+  elementos.suggestions.innerHTML = "";
+}
+
+
+// ==============================
+// PEDIR DICA
+// ==============================
+
+elementos.hintButton.addEventListener("click", mostrarDica);
+
+
+// ==============================
+// CARREGAR JSON
+// ==============================
+
+async function carregarCenas() {
+
   try {
+
     const resposta = await fetch("data/cenas.json");
-    if (!resposta.ok) throw new Error("Não foi possível carregar as cenas.");
+
+    if (!resposta.ok) {
+      throw new Error("Não foi possível carregar as cenas.");
+    }
 
     cenas = await resposta.json();
-    configurarListeners();
+    elementos.playButton.disabled = false;
+
   } catch (erro) {
+
     console.error(erro);
-    els.playButton.disabled = true;
-    els.homeCopy.textContent = "Não foi possível carregar as cenas. Verifique o arquivo data/cenas.json.";
+
+    alert("Não foi possível carregar as cenas do jogo.");
   }
 }
 
-iniciarAplicacao();
+
+carregarCenas();
