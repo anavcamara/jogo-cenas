@@ -424,6 +424,7 @@ function verificarResposta(respostaJogador) {
   const acertou = normalizar(cena.resposta) === respostaNormalizada;
 
   if (acertou) {
+    estado.tentativasRestantes--;
     finalizarRodada(true);
     return;
   }
@@ -464,6 +465,7 @@ function verificarObra(respostaJogador) {
       respostaNormalizada.includes(obraNormalizada));
 
   if (acertou) {
+    estado.tentativasRestantes--;
     finalizarRodada(true);
     return;
   }
